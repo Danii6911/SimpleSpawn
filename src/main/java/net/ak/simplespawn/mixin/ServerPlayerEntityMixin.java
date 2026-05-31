@@ -5,13 +5,13 @@ import com.llamalad7.mixinextras.sugar.*;
 import com.mojang.authlib.*;
 
 import net.ak.simplespawn.ConfigManager;
+import net.ak.simplespawn.CustomDimension;
 import net.minecraft.entity.player.*;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.*;
 import net.minecraft.server.*;
 import net.minecraft.server.network.*;
 import net.minecraft.server.world.*;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
 import net.minecraft.world.*;
 import org.jetbrains.annotations.*;
@@ -54,6 +54,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         ServerWorld lobbyWorld = player.getServer().getWorld(CustomDimension.LOBBY_KEY);
         if (lobbyWorld == null) {
             return;
+        }
 
         ConfigManager.SimpleSpawnConfig config = ConfigManager.getConfig(); // This will auto-load the config if it hasn't been loaded yet
 

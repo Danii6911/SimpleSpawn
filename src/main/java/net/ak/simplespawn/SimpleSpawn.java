@@ -7,8 +7,11 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.world.level.GameRules;
-import net.ak.simplespawn.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.world.GameRules;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +46,7 @@ public class SimpleSpawn implements ModInitializer {
 		});
 
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
-			if (entity.getWorld().getRegistryKey().equals(ModDimensions.LOBBY_KEY)) {
+			if (entity.getWorld().getRegistryKey().equals(CustomDimension.LOBBY_KEY)) {
 				return false;
 			}
 			return true;
@@ -51,7 +54,7 @@ public class SimpleSpawn implements ModInitializer {
 
 		ServerTickEvents.START_SERVER_TICK.register(server -> {
 			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-				if (player.getWorld().getRegistryKey().equals(ModDimensions.LOBBY_KEY)) {
+				if (player.getWorld().getRegistryKey().equals(CustomDimension.LOBBY_KEY)) {
 					player.getHungerManager().setFoodLevel(20);
 					player.getHungerManager().setSaturationLevel(5.0F);
 				}
@@ -59,7 +62,7 @@ public class SimpleSpawn implements ModInitializer {
 		});
 
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-			ServerWorld lobbyWorld = server.getWorld(ModDimensions.LOBBY_KEY);
+			ServerWorld lobbyWorld = server.getWorld(CustomDimension.LOBBY_KEY);
 			if (lobbyWorld != null) {
 				lobbyWorld.getGameRules().get(GameRules.DO_MOB_SPAWNING).set(false, server);
 				lobbyWorld.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);

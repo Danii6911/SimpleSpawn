@@ -1,8 +1,13 @@
+package net.ak.simplespawn.mixin;
+
+import net.ak.simplespawn.ConfigManager;
+import net.ak.simplespawn.CustomDimension;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.PlayerManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,7 +21,7 @@ public class JoinManagerMixin {
         NbtCompound loadedNbt = cir.getReturnValue();
 
         if (loadedNbt == null) {
-            SimpleSpawnConfig config = ConfigManager.getConfig();
+            ConfigManager.SimpleSpawnConfig config = ConfigManager.getConfig();
             
             ServerWorld lobbyWorld = player.getServer().getWorld(CustomDimension.LOBBY_KEY);
             
