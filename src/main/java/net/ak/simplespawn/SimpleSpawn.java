@@ -1,9 +1,13 @@
 package net.ak.simplespawn;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.world.level.GameRules;
 import net.ak.simplespawn.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +24,12 @@ public class SimpleSpawn implements ModInitializer {
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			SpawnCommand.register(dispatcher);
-		});		
+		});
 
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
 			if (world.getRegistryKey().equals(CustomDimension.LOBBY_KEY) && !player.hasPermissionLevel(2)) {
 				player.sendMessage(Text.literal("§cYou cannot break blocks in the lobby!"), true);
-				return ActionResult.FAIL; 
+				return ActionResult.FAIL;
 			}
 			return ActionResult.PASS;
 		});
@@ -33,9 +37,34 @@ public class SimpleSpawn implements ModInitializer {
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
 			if (world.getRegistryKey().equals(CustomDimension.LOBBY_KEY) && !player.hasPermissionLevel(2)) {
 				player.sendMessage(Text.literal("§cYou cannot build or interact here!"), true);
-				return ActionResult.FAIL; 
+				return ActionResult.FAIL;
 			}
 			return ActionResult.PASS;
+		});
+
+		ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
+			if (entity.getWorld().getRegistryKey().equals(ModDimensions.LOBBY_KEY)) {
+				return false;
+			}
+			return true;
+		});
+
+		ServerTickEvents.START_SERVER_TICK.register(server -> {
+			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+				if (player.getWorld().getRegistryKey().equals(ModDimensions.LOBBY_KEY)) {
+					player.getHungerManager().setFoodLevel(20);
+					player.getHungerManager().setSaturationLevel(5.0F);
+				}
+			}
+		});
+
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+			ServerWorld lobbyWorld = server.getWorld(ModDimensions.LOBBY_KEY);
+			if (lobbyWorld != null) {
+				lobbyWorld.getGameRules().get(GameRules.DO_MOB_SPAWNING).set(false, server);
+				lobbyWorld.getGameRules().get(GameRules.DO_DAYLIGHT_CYCLE).set(false, server);
+				lobbyWorld.setTimeOfDay(6000);
+			}
 		});
 
 		ServerLifecycleEvents.SERVER_STARTED.register(SimpleSpawnManager::initialize);
