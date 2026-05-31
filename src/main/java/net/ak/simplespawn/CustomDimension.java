@@ -9,7 +9,7 @@ public class CustomDimension {
     public static final String LOBBY_ID = "lobby";
 
     /**
-     * Maps to: data/globalspawn/dimension/lobby.json
+     * Maps to: data/simplespawn/dimension/lobby.json
      */
     public static final RegistryKey<World> LOBBY_KEY = RegistryKey.of(
         RegistryKeys.WORLD, 
@@ -17,7 +17,7 @@ public class CustomDimension {
     );
 
     /**
-     * Maps to: data/globalspawn/dimension_type/lobby.json
+     * Maps to: data/simplespawn/dimension_type/lobby.json
      */
     public static final RegistryKey<DimensionType> LOBBY_TYPE_KEY = RegistryKey.of(
         RegistryKeys.DIMENSION_TYPE, 
@@ -29,4 +29,4 @@ public class CustomDimension {
     }
 }
 
-}
+

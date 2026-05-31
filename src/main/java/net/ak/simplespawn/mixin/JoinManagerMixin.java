@@ -1,31 +1,35 @@
-package net.ak.simplespawn.mixin;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.llamalad7.mixinextras.injector.*;
-import net.ak.simplespawn.*;
-import net.minecraft.nbt.*;
-import net.minecraft.server.*;
-import net.minecraft.server.network.*;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.*;
+@Mixin(PlayerManager.class) 
+public class JoinManagerMixin {
 
-import java.util.*;
+    @Inject(method = "loadPlayerData", at = @At("RETURN"))
+    private void spawnNewPlayerInLobby(ServerPlayerEntity player, CallbackInfoReturnable<NbtCompound> cir) {
+        NbtCompound loadedNbt = cir.getReturnValue();
 
-@Mixin(JoinManager.class)
-public abstract class JoinManagerMixin {
-	
-	@Shadow @Final private MinecraftServer server;
-	
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    @ModifyReturnValue(method = "loadPlayerData", at = @At("RETURN"))
-	public Optional<NbtCompound> loadPlayerData(Optional<NbtCompound> original, ServerPlayerEntity player) {
-		NbtCompound nbt = original.orElse(new NbtCompound());
-		if (SimpleSpawnManager.isInitialSpawnPointActive(this.server) && SimpleSpawnMixinHandler.isNewPlayer(player)) {
-			nbt = SimpleSpawnMixinHandler.modifySpawnRegistryPositionAndDimensionForNewPlayer(this.server, nbt);
-			player.readNbt(nbt);
-		} else if (SimpleSpawnManager.isSimpleSpawnPointActive(this.server) && SimpleSpawn.Simple_SPAWN_CONFIG.spawnAtSimpleSpawnOnEveryJoin) {
-			nbt = SimpleSpawnMixinHandler.modifySpawnRegistryPositionAndDimensionForExistingPlayer(this.server, nbt);
-			player.readNbt(nbt);
-		}
-		return Optional.of(nbt);
-	}
+        if (loadedNbt == null) {
+            SimpleSpawnConfig config = ConfigManager.getConfig();
+            
+            ServerWorld lobbyWorld = player.getServer().getWorld(CustomDimension.LOBBY_KEY);
+            
+            if (lobbyWorld != null) {
+                player.teleport(
+                    lobbyWorld,
+                    config.x + 0.5, 
+                    config.y,
+                    config.z + 0.5,
+                    config.yaw,
+                    0.0F
+                );
+            }
+        }
+    }
 }

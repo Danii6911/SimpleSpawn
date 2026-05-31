@@ -1,38 +1,71 @@
 package net.ak.simplespawn.mixin;
 
 import net.minecraft.server.MinecraftServer;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import com.llamalad7.mixinextras.sugar.*;
+import com.mojang.authlib.*;
+
+import net.ak.simplespawn.ConfigManager;
+import net.minecraft.entity.player.*;
+import net.minecraft.nbt.*;
+import net.minecraft.registry.*;
+import net.minecraft.server.*;
+import net.minecraft.server.network.*;
+import net.minecraft.server.world.*;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.*;
+import net.minecraft.world.*;
+import org.jetbrains.annotations.*;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.callback.*;
 
 @Mixin(ServerPlayerEntity.class)
-public class ServerPlayerEntityMixin {
+public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
-    @Inject(method = "getRespawnTarget", at = @At("HEAD"), cancellable = true)
-    private void overrideDefaultRespawnPoint(boolean alive, ServerPlayerEntity.RespawnAnchorReason reason, CallbackInfoReturnable<ServerPlayerEntity.RespawnTarget> cir) {
+    public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
+        super(world, pos, yaw, gameProfile);
+    }
+
+    /**
+     * Intercepts the player respawn target determination loop.
+     * If the player does not have a valid bed or respawn anchor set, 
+     * they are cleanly routed to the custom config coordinates inside the lobby dimension.
+     */
+    @Inject(
+        method = "getRespawnTarget(ZLnet/minecraft/world/TeleportTarget$PostDimensionTransition;)Lnet/minecraft/world/TeleportTarget;", 
+        at = @At("HEAD"), 
+        cancellable = true
+    )
+    private void overrideDefaultRespawnPoint(
+        boolean alive, 
+        TeleportTarget.PostDimensionTransition postDimensionTransition, 
+        CallbackInfoReturnable<TeleportTarget> cir
+    ) {
+        if(alive) {
+            return; 
+        }
+
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-        
 
-        //check spawn point 
         if (player.getSpawnPointPosition() != null) {
-            return; 
+            return;
         }
 
-        ServerWorld lobbyWorld = player.getServer().getWorld(ModDimensions.LOBBY_KEY);
+        ServerWorld lobbyWorld = player.getServer().getWorld(CustomDimension.LOBBY_KEY);
         if (lobbyWorld == null) {
-            return; 
-        }
+            return;
 
-        SimpleSpawnConfig config = SimpleSpawn.SIMPLE_SPAWN_CONFIG;
-        Vec3d targetPos = new Vec3d(config.x + 0.5, config.y, config.z + 0.5);
+        ConfigManager.SimpleSpawnConfig config = ConfigManager.getConfig(); // This will auto-load the config if it hasn't been loaded yet
 
-        ServerPlayerEntity.RespawnTarget customTarget = new ServerPlayerEntity.RespawnTarget(
+        BlockPos lobbyBlockPos = new BlockPos(config.x, config.y, config.z);
+
+        TeleportTarget customTarget = new TeleportTarget(
             lobbyWorld, 
-            targetPos, 
-            Vec3d.ZERO, // 0 velocity 
+            Vec3d.ofCenter(lobbyBlockPos), 
+            Vec3d.ZERO,                    
             config.yaw, 
-            0.0F
+            0.0F,                         
+            postDimensionTransition        
         );
 
         cir.setReturnValue(customTarget); 
