@@ -55,7 +55,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         if (lobbyWorld == null) {
             return;
 
-        ConfigManager.SimpleSpawnConfig config = ConfigManager.getConfig(); // This will auto-load the config if it hasn't been loaded yet
+        ConfigManager.SimpleSpawnConfig config = ConfigManager.getConfig(); 
 
         BlockPos lobbyBlockPos = new BlockPos(config.x, config.y, config.z);
 

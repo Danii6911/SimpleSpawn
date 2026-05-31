@@ -9,8 +9,9 @@ import java.io.FileWriter;
 
 public class ConfigManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("lobby_config.json").toFile();
-    
+    private static final File CONFIG_FILE = FabricLoader.getInstance().getConfigDir().resolve("lobby_config.json")
+            .toFile();
+
     private static SimpleSpawnConfig activeConfig;
 
     public static class SimpleSpawnConfig {
@@ -47,13 +48,21 @@ public class ConfigManager {
                 activeConfig = GSON.fromJson(reader, SimpleSpawnConfig.class);
             }
         } catch (Exception e) {
-            activeConfig = new SimpleSpawnConfig(); 
+            activeConfig = new SimpleSpawnConfig();
         }
     }
 
     public static void save() {
+        save(activeConfig); 
+    }
+
+    
+    public static void save(SimpleSpawnConfig configToSave) {
+        if (configToSave == null)
+            return;
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-            GSON.toJson(activeConfig, writer);
+            GSON.toJson(configToSave, writer);
+            activeConfig = configToSave; 
         } catch (Exception e) {
             e.printStackTrace();
         }

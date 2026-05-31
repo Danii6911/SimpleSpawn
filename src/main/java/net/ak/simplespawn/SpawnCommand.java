@@ -41,10 +41,10 @@ public class SpawnCommand {
                         if (source.getEntity() instanceof ServerPlayerEntity player) {
                             BlockPos pos = player.getBlockPos();
                             String dim = player.getWorld().getRegistryKey().getValue().toString();
+                            ConfigManager.SimpleSpawnConfig config = ConfigManager.getConfig();
+                            config.setSpawn(dim, pos.getX(), pos.getY(), pos.getZ(), player.getYaw());
                             
-                            SimpleSpawn.SIMPLE_SPAWN_CONFIG.setSpawn(dim, pos.getX(), pos.getY(), pos.getZ(), player.getYaw());
-                            SimpleSpawn.SIMPLE_SPAWN_CONFIG_HOLDER.save(); 
-
+                            ConfigManager.save(config);
                             source.sendFeedback(() -> Text.literal("Spawn point updated successfully!"), true);
                             return 1;
                         }
