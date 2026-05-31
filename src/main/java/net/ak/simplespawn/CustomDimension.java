@@ -3,7 +3,8 @@ package net.ak.simplespawn;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
-import net.minecraft.item.Item;
+import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionTypes;
 
 public class CustomDimension {
     public static final String LOBBY_ID = "lobby";
@@ -19,7 +20,7 @@ public class CustomDimension {
     /**
      * Maps to: data/simplespawn/dimension_type/lobby.json
      */
-    public static final RegistryKey<DimensionType> LOBBY_TYPE_KEY = RegistryKey.of(
+    public static final RegistryKey<?> LOBBY_TYPE_KEY = RegistryKey.of(
         RegistryKeys.DIMENSION_TYPE, 
         Identifier.of(SimpleSpawn.MOD_ID, LOBBY_ID)
     );
