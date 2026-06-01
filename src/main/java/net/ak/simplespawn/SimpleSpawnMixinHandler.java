@@ -9,7 +9,7 @@ import net.minecraft.util.math.*;
 import org.jetbrains.annotations.*;
 
 public class SimpleSpawnMixinHandler {
-	
+	// legacy code for player management
 }
 
 //ServerPlayerEntityMixin.java -> manage player deaths 
